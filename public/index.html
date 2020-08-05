@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#000000" />
     <meta name="description" content="Modern PWA Weather React App" />
     <link rel="apple-touch-icon" href="./images/logo.png" />
-    <link rel="manifest" href="./manifest.json" />
+    <link rel="manifest" href="./pwa-manifest.json"  />
     <title>Weather App</title>
   </head>
 
@@ -16,11 +16,30 @@
       You need to enable JavaScript to run this app.
     </noscript>
     <div id="root"></div>
-    <script>
+      <script>
+      // Delete CodeSandbox-generated manifest link tag.
+      {
+        const codesandboxManifest = document.querySelector(
+          'link[rel="manifest"][href="/manifest.json"]'
+        );
+        if (codesandboxManifest) {
+          codesandboxManifest.remove();
+        }
+      }
+
+      // Replace CodeSandbox’s service worker with our own.
       if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register = (original =>
+          function(...args) {
+            const [url] = args;
+            if (url === "/sandbox-service-worker.js") {
+              return new Promise(() => {});
+            }
+            return original.call(this, ...args);
+          })(navigator.serviceWorker.register);
         window.addEventListener("load", () => {
           navigator.serviceWorker
-            .register("./serviceworker.js")
+            .register("/pwa-service-worker.js")
             .then(reg => console.log("Success: ", reg.scope))
             .catch(err => console.log("Failure: ", err));
         });
